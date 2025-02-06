@@ -9,7 +9,7 @@ const connectdb=async()=>{
         }`);
 
      }catch(err){
-        console.log("database connection error :",err);
+        console.log("your  database connection failed :",err);
      }
 }
 
