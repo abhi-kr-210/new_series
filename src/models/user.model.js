@@ -31,6 +31,9 @@ const userSchema=new mongoose.Schema(
      coverImage:{
         type:String    //cloudinary url
      },
+     refreshToken:{
+           type:String
+     },
      watchHistory:[
         {
             type:mongoose.Schema.Types.ObjectId,
@@ -43,8 +46,6 @@ const userSchema=new mongoose.Schema(
  }
 
 )
-
-
 // userSchema.pre('save',async function(next){
 //        if(!this.isModified('password'))return next();
 //        this.password=await bcrypt.hash(this.password,10);
@@ -67,14 +68,24 @@ userSchema.pre('save', async function (next) {
     }
 });
 
-userSchema.methods.isPasswordcorrect= async function(password){
-        try{
-           return await bcrypt.compare(password,this.password);
-        }catch(err){
-             throw err;
-        }
+// userSchema.methods.isPasswordcorrect= async function(password){
+//         try{
+//            return await bcrypt.compare(password,this.password);
+//         }catch(err){
+//              throw err;
+//         }
+// }
+userSchema.methods.isPasswordcorrect=async function (candidatePassword) {
+    try{
+// use bycrypt to compare the password with the hasehed password
+     const isMatch=await bcrypt.compare(candidatePassword,this.password);
+     return isMatch;
+    }
+    catch(err){
+         throw err;
+    }
 }
-userSchema.methods.generateAcessToken=function(){
+userSchema.methods.generateAccessToken=function(){
         return  jwt.sign(
             {
                 _id:this._id,
@@ -82,9 +93,9 @@ userSchema.methods.generateAcessToken=function(){
                 email:this.email,
                 fullname:this.fullname,
             },
-            process.env.ACESS_TOKEN_SECRET,
+            process.env.ACCESS_TOKEN_SECRET,
             {
-                expiresIn:process.env.ACESS_TOKEN_EXPIRY
+                expiresIn:process.env.ACCESS_TOKEN_EXPIRY
             }
          )
 }
@@ -94,7 +105,7 @@ userSchema.methods.generateRefreshToken= function(){
                 _id:this._id,
             },
             process.env.REFRESH_TOKEN_SECRET,
-            {
+            { 
                 expiresIn:process.env.REFRESH_TOKEN_EXPIRY
             }
          )
